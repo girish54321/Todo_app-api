@@ -1,12 +1,11 @@
 {
-  "development":{
+  "development": {
     "username": "postgres",
     "password": "root",
-    "database": "database_todo",
+    "database": "dev_db",
     "host": "127.0.0.1",
     "dialect": "postgres"
-  }
-  ,
+  },
   "test": {
     "username": "root",
     "password": null,

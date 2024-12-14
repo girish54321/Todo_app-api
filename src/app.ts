@@ -1,5 +1,6 @@
 require('dotenv').config();
 import express = require('express');
+import { sequelize } from '../models';
 import morgan = require('morgan');
 import createError = require('http-errors');
 import authRoute from './route/authRoute';
@@ -37,6 +38,7 @@ app.use(async (error, req, res, next) => {
 
 const start = async () => {
     try {
+        await sequelize.authenticate()
         app.listen(PORT, () => {
             console.log(`Server Stated at: ${PORT}`);
         })
