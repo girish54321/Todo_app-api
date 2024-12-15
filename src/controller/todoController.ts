@@ -1,125 +1,111 @@
-// 'use strict';
-// import createError from 'http-errors';
-// import { UserToDo } from '../../models';
-// import { getFileExtension } from '../middlewares/fileUpload';
-// import fs = require('fs');
+'use strict';
+import createError from 'http-errors';
+//@ts-ignore
+import { User, Todo } from '../../models';
+import { Request, Response, NextFunction } from 'express'
+import fs = require('fs');
+import { ToDoRequestType } from '../types/todoType';
 
-// const getUserTodo = async (req, res, next) => {
-//     try {
-//         const userId = req.payLoad.aud
-//         const todo = await UserToDo.findAll({ where: { userId: parseInt(userId), }, });
-//         if (!todo) {
-//             res.send({ todo: [] })
-//             return
-//         }
-//         res.send({ todo })
-//     } catch (error) {
-//         next(error)
-//     }
-// }
+const getUserTodo = async (req, res, next) => {
+    try {
+        const userId = req.payLoad.aud
+        const findUser = await User.findByPk(userId)
+        const findAllTodo = await findUser.getTodos();
+        if (!findAllTodo) {
+            res.send({ todo: [] })
+            return
+        }
+        res.send({ todo: findAllTodo })
+    } catch (error) {
+        next(error)
+    }
+}
 
-// const getSelectedTodo = async (req, res, next) => {
-//     try {
-//         const id = req.params.id
-//         const userId = req.payLoad.aud
-//         const todo = await UserToDo.findOne({ where: { userId: parseInt(userId), id: parseInt(id) }, });
-//         if (!todo) {
-//             res.send({ todo: [] })
-//             return
-//         }
-//         res.send({ todo })
-//     } catch (error) {
-//         next(error)
-//     }
-// }
+const getSelectedTodo = async (req, res, next) => {
+    try {
+        const id = req.params.id
+        const userId = req.payLoad.aud
+        const todo = await Todo.findByPk(id, { raw: true });
+        if (!todo) {
+            res.send({ todo: [] })
+            return
+        }
+        res.send({ todo })
+    } catch (error) {
+        next(error)
+    }
+}
 
-// const createTdo = async (req, res, next) => {
-//     try {
-//         const { title, body } = req.body
-//         let imagePath = req?.file?.path || null
-//         const userId = req.payLoad.aud
-//         const data = await UserToDo.create({ title, body, status: "OPEN", todoImage: imagePath ?? null, userId: parseInt(userId) })
-//         if (imagePath) {
-//             const newFileImage = `todoimages/${data.dataValues.id.toString()}.${getFileExtension(imagePath)}`
-//             fs.rename(req?.file?.path, newFileImage, function (err) {
-//                 if (err) throw err;
-//             });
-//             data.todoImage = newFileImage
-//             data.save()
-//         }
-//         return res.send({ post: data })
-//     } catch (error) {
-//         next(error)
-//     }
-// }
+const createTdo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, next: NextFunction) => {
+    try {
+        const toDoRequest = req.body;
 
-// const deleteToDo = async (req, res, next) => {
-//     try {
-//         const id = req.params.id
-//         if (!id) {
-//             throw createError.Conflict("No ToDo Found")
-//         }
-//         const userId = req.payLoad.aud;
-//         let imagePath = null;
-//         if (req.file && req.file.path) {
-//             imagePath = req.file.path;
-//         }
-//         const toDo = await UserToDo.findOne({ where: { id: id, userId: userId } });
-//         if (toDo) {
-//             if (toDo.todoImage) {
-//                 if (fs.existsSync(toDo.todoImage)) {
-//                     fs.unlinkSync(toDo.todoImage);
-//                 }
-//             }
-//             await toDo.destroy();
-//             return res.send({ deleted: true });
-//         } else {
-//             return res.send({ deleted: false });
-//         }
-//     } catch (error) {
-//         next(error);
-//     }
-// }
+        if (!toDoRequest?.title) {
+            throw createError.BadRequest("Title is required")
+        }
+        if (!toDoRequest?.body) {
+            throw createError.BadRequest("Body is required")
+        }
+        if (!toDoRequest?.status) {
+            throw createError.BadRequest("Status is required")
+        }
+        //@ts-ignore
+        const userId = req.payLoad.aud
+        const findUser = await User.findByPk(userId)
 
-// const updateTodo = async (req, res, next) => {
-//     try {
-//         const { title, body, id, status, deleteFile } = req.body;
-//         const userId = req.payLoad.aud;
-//         let imagePath = null;
-//         if (req.file && req.file.path) {
-//             imagePath = req.file.path;
-//         }
+        if (!findUser) {
+            throw createError.Conflict("No User Found")
+        }
 
-//         if (imagePath && deleteFile === "true") {
-//             throw createError.BadGateway("you cant upload and delete file at same time")
-//         }
-//         const toDo = await UserToDo.findOne({ where: { id: id, userId: userId } });
-//         if (toDo && toDo.todoImage && deleteFile === "true") {
-//             if (fs.existsSync(toDo.todoImage)) {
-//                 fs.unlinkSync(toDo.todoImage);
-//             }
-//         }
-//         toDo.title = title;
-//         toDo.body = body;
-//         toDo.status = status;
+        const createTodo = await findUser.createTodo({
+            title: toDoRequest.title,
+            body: toDoRequest.body,
+            status: toDoRequest?.status,
+        })
+        if (!createTodo) {
+            throw createError.BadRequest("Failed to create todo")
+        }
+        return res.send({ todo: createTodo })
+    } catch (error) {
+        next(error)
+    }
+}
 
-//         if (imagePath) {
-//             if (imagePath) {
-//                 const newFileImage = `todoimages/${toDo.id.toString()}.${getFileExtension(imagePath)}`
-//                 fs.rename(req?.file?.path, newFileImage, function (err) {
-//                     if (err) throw err;
-//                 });
-//                 toDo.todoImage = newFileImage
-//             }
-//         }
-//         if (deleteFile === "true") {
-//             toDo.todoImage = null;
-//         }
-//         await toDo.save();
-//         return res.send({ post: toDo });
-//     } catch (error) {
-//         next(error);
-//     }
-// }
+const deleteToDo = async (req, res, next) => {
+    try {
+        const id = req.params.id
+        if (!id) {
+            throw createError.Conflict("No ToDo Found")
+        }
+        const userId = req.payLoad.aud;
+        let imagePath = null;
+        if (req.file && req.file.path) {
+            imagePath = req.file.path;
+        }
+        const toDo = await Todo.findByPk(id);
+        if (toDo) {
+            await toDo.destroy();
+            return res.send({ deleted: true });
+        } else {
+            return res.send({ deleted: false });
+        }
+    } catch (error) {
+        next(error);
+    }
+}
 
-// export { createTdo, updateTodo, getUserTodo, deleteToDo, getSelectedTodo }
+const updateTodo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, next: NextFunction) => {
+    try {
+        const { title, body, id, status } = req.body;
+        const toDo = await Todo.findByPk(id);
+        toDo.title = title;
+        toDo.body = body;
+        toDo.status = status;
+        await toDo.save();
+        return res.send({ post: toDo });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export { createTdo, getUserTodo, getSelectedTodo, deleteToDo, updateTodo }

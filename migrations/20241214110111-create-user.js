@@ -12,17 +12,19 @@ module.exports = {
       firstName: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
         validate: {
           isNull: {
             msg: 'First name cannot be null.',
           },
         },
       },
+      password: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       lastName: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
         validate: {
           isNull: {
             msg: 'Last name cannot be null.',

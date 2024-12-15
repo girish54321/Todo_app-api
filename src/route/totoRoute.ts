@@ -1,12 +1,11 @@
 import { Router } from 'express'
 const todoRout = Router()
-import { uploadTodo } from '../middlewares/fileUpload'
-// import { createTdo, updateTodo, getUserTodo, deleteToDo, getSelectedTodo } from '../controller/todoController'
+import { createTdo, getUserTodo, getSelectedTodo, updateTodo, deleteToDo } from '../controller/todoController'
 
-// todoRout.post("/addtodo", uploadTodo.single('todoimage'), createTdo)
-// todoRout.post("/updatetodo", uploadTodo.single('todoimage'), updateTodo)
-// todoRout.get("/gettodo", getUserTodo)
-// todoRout.get("/gettodo/:id", getSelectedTodo)
-// todoRout.delete("/deletetodo/:id", deleteToDo)
+todoRout.post("/addtodo", createTdo)
+todoRout.post("/updatetodo", updateTodo)
+todoRout.get("/gettodo", getUserTodo)
+todoRout.get("/gettodo/:id", getSelectedTodo)
+todoRout.delete("/deletetodo/:id", deleteToDo)
 
 export default todoRout
