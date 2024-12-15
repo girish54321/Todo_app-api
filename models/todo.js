@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
         as: 'user',
       });
     }
+
   }
   Todo.init({
     toDoId: {

@@ -16,6 +16,11 @@ module.exports = (sequelize, DataTypes) => {
         as: 'todos',
       });
     }
+
+    toJSON() {
+      return { ...this.get(), password: undefined, }
+    }
+
   }
   User.init({
     userId: {
