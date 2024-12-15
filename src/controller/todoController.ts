@@ -96,11 +96,24 @@ const deleteToDo = async (req, res, next) => {
 
 const updateTodo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, next: NextFunction) => {
     try {
+        const toDoRequest = req.body;
         const { title, body, id, status } = req.body;
+        if (!toDoRequest?.title) {
+            throw createError.BadRequest("Title is required")
+        }
+        if (!toDoRequest?.body) {
+            throw createError.BadRequest("Body is required")
+        }
+        if (!toDoRequest?.status) {
+            throw createError.BadRequest("Status is required")
+        }
         const toDo = await Todo.findByPk(id);
+        if (!toDo) {
+            throw createError.Conflict("No ToDo Found")
+        }
         toDo.title = title;
         toDo.body = body;
-        toDo.status = status;
+        toDo.state = "in-progress";
         await toDo.save();
         return res.send({ post: toDo });
     } catch (error) {

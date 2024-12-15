@@ -28,11 +28,11 @@ module.exports = {
         },
       },
       state: {
-        type: Sequelize.ENUM('pending', 'completed'),
+        type: Sequelize.ENUM('pending', 'completed', 'in-progress'),
         defaultValue: 'pending',
         allowNull: false,
         validate: {
-          isIn: [['pending', 'completed']],
+          isIn: [['pending', 'completed', 'in-progress']],
           notEmpty: {
             msg: 'State must be either pending or completed.',
           },
