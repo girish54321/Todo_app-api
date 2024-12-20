@@ -3,8 +3,8 @@ import createError from 'http-errors';
 //@ts-ignore
 import { User, Todo } from '../../models';
 import { Request, Response, NextFunction } from 'express'
-import fs = require('fs');
 import { ToDoRequestType } from '../types/todoType';
+import paginateHelper from '../helper/paginateHelper';
 
 const getUserTodo = async (req, res, next) => {
     try {
@@ -36,6 +36,51 @@ const getSelectedTodo = async (req, res, next) => {
     }
 }
 
+
+const getAllTheTodo = async (req, res, next) => {
+    try {
+        const userId = req.payLoad.aud
+        const pageAsNumber = Number.parseInt(req.query.page);
+        const sizeAsNumber = Number.parseInt(req.query.size);
+
+        let page = 0;
+        if (!Number.isNaN(pageAsNumber) && pageAsNumber > 0) {
+            page = pageAsNumber;
+        }
+
+        let size = 5;
+        if (!Number.isNaN(sizeAsNumber) && !(sizeAsNumber > 10) && !(sizeAsNumber < 1)) {
+            size = sizeAsNumber;
+        }
+
+        const usersWithCount = await Todo.findAndCountAll({
+            whare: {
+                userId: userId
+            },
+            order: [['updatedAt', 'DESC']],
+            ...paginateHelper(
+                {
+                    currentPage: page,
+                    pageSize: size,
+                }
+            ),
+        });
+        setTimeout(() => {
+            res.send({
+                total_pages: Math.ceil(usersWithCount.count / Number.parseInt(`${size}`)),
+                total: usersWithCount.count,
+                per_page: size,
+                page: page,
+                todo: usersWithCount.rows,
+            });
+        }, 2000);
+
+    } catch (error) {
+        console.log("Add Bluck Error: " + error);
+        next(error)
+    }
+}
+
 const createTdo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, next: NextFunction) => {
     try {
         const toDoRequest = req.body;
@@ -46,8 +91,8 @@ const createTdo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, n
         if (!toDoRequest?.body) {
             throw createError.BadRequest("Body is required")
         }
-        if (!toDoRequest?.status) {
-            throw createError.BadRequest("Status is required")
+        if (!toDoRequest?.state) {
+            throw createError.BadRequest("State is required")
         }
         //@ts-ignore
         const userId = req.payLoad.aud
@@ -60,12 +105,12 @@ const createTdo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, n
         const createTodo = await findUser.createTodo({
             title: toDoRequest.title,
             body: toDoRequest.body,
-            status: toDoRequest?.status,
+            state: toDoRequest?.state,
         })
         if (!createTodo) {
             throw createError.BadRequest("Failed to create todo")
         }
-        return res.send({ todo: createTodo })
+        return res.send({ success: true })
     } catch (error) {
         next(error)
     }
@@ -97,23 +142,23 @@ const deleteToDo = async (req, res, next) => {
 const updateTodo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, next: NextFunction) => {
     try {
         const toDoRequest = req.body;
-        const { title, body, id, status } = req.body;
+        const { title, body, toDoId, state } = req.body;
         if (!toDoRequest?.title) {
             throw createError.BadRequest("Title is required")
         }
         if (!toDoRequest?.body) {
             throw createError.BadRequest("Body is required")
         }
-        if (!toDoRequest?.status) {
+        if (!toDoRequest?.state) {
             throw createError.BadRequest("Status is required")
         }
-        const toDo = await Todo.findByPk(id);
+        const toDo = await Todo.findByPk(toDoId);
         if (!toDo) {
             throw createError.Conflict("No ToDo Found")
         }
         toDo.title = title;
         toDo.body = body;
-        toDo.state = "in-progress";
+        toDo.state = state;
         await toDo.save();
         return res.send({ post: toDo });
     } catch (error) {
@@ -121,4 +166,4 @@ const updateTodo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, 
     }
 }
 
-export { createTdo, getUserTodo, getSelectedTodo, deleteToDo, updateTodo }
+export { createTdo, getUserTodo, getSelectedTodo, deleteToDo, updateTodo, getAllTheTodo }

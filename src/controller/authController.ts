@@ -34,8 +34,6 @@ const createAccount = async (req: Request<{}, {}, CreateAccountRequestType>, res
         if (!newPassword) {
             throw createError.BadRequest()
         }
-        console.log("newPassword", newPassword);
-
         user.password = newPassword
         await user.save()
         res.send({ accessToken, refreshToken })
@@ -72,7 +70,9 @@ const login = async (req: Request<{}, {}, LoginRequestType>, res: Response, next
         const refreshToken = await signRefreshToken(userId)
         const accessToken = await signAccessToken(userId)
         const user = await User.findOne({ where: { userId } })
-        res.send({ user, accessToken, refreshToken })
+        setTimeout(() => {
+            res.send({ user, accessToken, refreshToken })
+        }, 2000);
         // console.log("My Custom Authentication");
         // const user = await User.create({
         //     email: "girish@gmail.com", firstName: "Girish", lastName: "Parate"

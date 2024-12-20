@@ -1,8 +1,8 @@
 
 export interface ToDoRequestType {
-    id?: string;
+    toDoId?: string;
     title?: string;
     body?: string;
-    status?: string;
+    state?: string;
 }
 
