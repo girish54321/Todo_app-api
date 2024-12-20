@@ -5,7 +5,6 @@ import morgan = require('morgan');
 import createError = require('http-errors');
 import authRoute from './route/authRoute';
 import todoRout from './route/totoRoute';
-import userRouter from './route/usersRoute';
 import { verifyAccessToken } from './helper/jwthelper';
 const app = express()
 //* Let Server Image
@@ -18,7 +17,6 @@ const PORT = process.env.PORT || 2000
 
 //* Routs
 app.use("/api/v1/auth", authRoute)
-app.use("/api/v1/users", verifyAccessToken, userRouter)
 app.use("/api/v1/todo", verifyAccessToken, todoRout)
 
 app.use(async (req, res, next) => {

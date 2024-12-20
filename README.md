@@ -57,21 +57,3 @@ http://localhost:5000/api/v1/todo/gettodo:id
 ```
 http://localhost:5000/api/v1/todo/deletetodo:id
 ```
-
-### Users
-
-```
-http://localhost:5000/api/v1/users/getusers
-```
-
-```
-http://localhost:5000/api/v1/users/getprofile
-```
-
-```
-http://localhost:5000/api/v1/users/updateprofileimage
-```
-
-```
-http://localhost:5000/api/v1/users/deleteaccount
-```
