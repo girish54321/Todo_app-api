@@ -8,7 +8,7 @@ About the App
 
 My ToDo App (Backend) is a backend service built with Node.js, Express, and Sequelize. a ToDo app designed to help users manage their tasks efficiently. This backend provides RESTful APIs to handle CRUD operations for tasks and integrates seamlessly with the frontend application.
 
-[Todo App](https://github.com/girish54321/MyToDo-Swfit-UI)
+[Todo App](https://github.com/girish54321/To-Do-React-Native/tree/main)
 
 ## Screenshots
 
