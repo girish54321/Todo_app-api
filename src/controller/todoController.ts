@@ -54,7 +54,7 @@ const getAllTheTodo = async (req, res, next) => {
         }
 
         const usersWithCount = await Todo.findAndCountAll({
-            whare: {
+            where: {
                 userId: userId
             },
             order: [['updatedAt', 'DESC']],
@@ -65,15 +65,13 @@ const getAllTheTodo = async (req, res, next) => {
                 }
             ),
         });
-        setTimeout(() => {
-            res.send({
-                total_pages: Math.ceil(usersWithCount.count / Number.parseInt(`${size}`)),
-                total: usersWithCount.count,
-                per_page: size,
-                page: page,
-                todo: usersWithCount.rows,
-            });
-        }, 2000);
+        res.send({
+            total_pages: Math.ceil(usersWithCount.count / Number.parseInt(`${size}`)),
+            total: usersWithCount.count,
+            per_page: size,
+            page: page,
+            todo: usersWithCount.rows,
+        });
 
     } catch (error) {
         console.log("Add Bluck Error: " + error);
