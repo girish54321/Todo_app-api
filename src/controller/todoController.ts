@@ -24,7 +24,6 @@ const getUserTodo = async (req, res, next) => {
 const getSelectedTodo = async (req, res, next) => {
     try {
         const id = req.params.id
-        const userId = req.payLoad.aud
         const todo = await Todo.findByPk(id, { raw: true });
         if (!todo) {
             res.send({ todo: [] })
@@ -58,12 +57,10 @@ const getAllTheTodo = async (req, res, next) => {
                 userId: userId
             },
             order: [['updatedAt', 'DESC']],
-            ...paginateHelper(
-                {
-                    currentPage: page,
-                    pageSize: size,
-                }
-            ),
+            ...paginateHelper({
+                currentPage: page,
+                pageSize: size,
+            }),
         });
         res.send({
             total_pages: Math.ceil(usersWithCount.count / Number.parseInt(`${size}`)),
@@ -158,10 +155,18 @@ const updateTodo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, 
         toDo.body = body;
         toDo.state = state;
         await toDo.save();
-        return res.send({ post: toDo });
+        return res.send({ success: true });
     } catch (error) {
         next(error);
     }
 }
 
-export { createTdo, getUserTodo, getSelectedTodo, deleteToDo, updateTodo, getAllTheTodo }
+const testAuth = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        res.send({ message: "Authenticated" });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export { createTdo, getUserTodo, getSelectedTodo, deleteToDo, updateTodo, getAllTheTodo, testAuth }
