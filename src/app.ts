@@ -6,6 +6,7 @@ import createError = require('http-errors');
 import authRoute from './route/authRoute';
 import todoRout from './route/totoRoute';
 import { verifyAccessToken } from './helper/jwthelper';
+import profileRoute from './route/profilrRoute';
 const app = express()
 //* Let Server Image
 app.use('/todoimages', express.static('todoimages'))
@@ -18,6 +19,7 @@ const PORT = process.env.PORT || 2000
 //* Routs
 app.use("/api/v1/auth", authRoute)
 app.use("/api/v1/todo", verifyAccessToken, todoRout)
+app.use("/api/v1/profile", profileRoute)
 
 app.use(async (req, res, next) => {
     next(createError.NotFound())

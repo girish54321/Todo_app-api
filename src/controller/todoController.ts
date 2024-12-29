@@ -125,9 +125,9 @@ const deleteToDo = async (req, res, next) => {
         const toDo = await Todo.findByPk(id);
         if (toDo) {
             await toDo.destroy();
-            return res.send({ deleted: true });
+            return res.send({ success: true });
         } else {
-            return res.send({ deleted: false });
+            return res.send({ success: false });
         }
     } catch (error) {
         next(error);
@@ -151,6 +151,7 @@ const updateTodo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, 
         if (!toDo) {
             throw createError.Conflict("No ToDo Found")
         }
+
         toDo.title = title;
         toDo.body = body;
         toDo.state = state;
