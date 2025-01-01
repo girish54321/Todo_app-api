@@ -15,6 +15,17 @@ export const storage = multer.diskStorage({
     }
 })
 
+export const fileStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        return cb(null, './file')
+    },
+    filename: function (req, file, cb) {
+        const userId = req.payLoad.aud
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        return cb(null, uniqueSuffix + '.' + getFileExtension(file.originalname))
+    }
+})
+
 export const profileImageStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         return cb(null, './profileimage')
@@ -29,4 +40,4 @@ export const profileImageStorage = multer.diskStorage({
 
 export const uploadTodo = multer({ storage: storage })
 export const uploadProfile = multer({ storage: profileImageStorage })
-
+export const uploadFileMulter = multer({ storage: fileStorage })

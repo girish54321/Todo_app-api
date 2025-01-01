@@ -3,7 +3,7 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Todo extends Model {
+  class File extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,46 +11,38 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      this.belongsTo(models.Todo, {
+        foreignKey: 'toDoId',
+        as: 'files',
+      });
       this.belongsTo(models.User, {
         foreignKey: 'userId',
         as: 'user',
       });
-      this.hasMany(models.File, {
-        foreignKey: 'toDoId',
-        as: 'files',
-      });
     }
-
   }
-  Todo.init({
-    toDoId: {
+  File.init({
+    fileId: {
       type: DataTypes.UUID,
       allowNull: false,
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
     },
-    title: {
+    fileName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    body: {
-      type: DataTypes.TEXT,
+    fileSize: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
-    state: {
-      type: DataTypes.ENUM('pending', 'completed', 'in-progress'),
-      defaultValue: 'pending',
+    type: {
+      type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        isIn: [['pending', 'completed', 'in-progress']],
-        notEmpty: {
-          msg: 'State must be either pending or completed.'
-        }
-      }
     }
   }, {
     sequelize,
-    modelName: 'Todo',
+    modelName: 'File',
   });
-  return Todo;
+  return File;
 };

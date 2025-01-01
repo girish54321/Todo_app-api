@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId',
         as: 'todos',
       });
+      this.hasMany(models.File, {
+        foreignKey: 'userId',
+        as: 'files',
+      });
     }
 
     toJSON() {

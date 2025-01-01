@@ -6,3 +6,14 @@ export interface ToDoRequestType {
     state?: string;
 }
 
+export interface FileRequestType {
+    fieldname?: string;
+    originalname?: string;
+    encoding?: string;
+    mimetype?: string;
+    destination?: string;
+    filename?: string;
+    fileName?: string;
+    path?: string;
+    size?: number;
+}

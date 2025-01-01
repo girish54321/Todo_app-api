@@ -1,10 +1,11 @@
 'use strict';
 import createError from 'http-errors';
 //@ts-ignore
-import { User, Todo } from '../../models';
+import { User, Todo, File } from '../../models';
 import { Request, Response, NextFunction } from 'express'
-import { ToDoRequestType } from '../types/todoType';
+import { FileRequestType, ToDoRequestType } from '../types/todoType';
 import paginateHelper from '../helper/paginateHelper';
+import { deleteFile } from '../middlewares/fileHelper';
 
 const getUserTodo = async (req, res, next) => {
     try {
@@ -24,7 +25,9 @@ const getUserTodo = async (req, res, next) => {
 const getSelectedTodo = async (req, res, next) => {
     try {
         const id = req.params.id
-        const todo = await Todo.findByPk(id, { raw: true });
+        const todo = await Todo.findByPk(id, {
+            include: [{ model: File, as: 'files', }],
+        });
         if (!todo) {
             res.send({ todo: [] })
             return
@@ -57,6 +60,7 @@ const getAllTheTodo = async (req, res, next) => {
                 userId: userId
             },
             order: [['updatedAt', 'DESC']],
+            include: [{ model: File, as: 'files', }],
             ...paginateHelper({
                 currentPage: page,
                 pageSize: size,
@@ -79,20 +83,23 @@ const getAllTheTodo = async (req, res, next) => {
 const createTdo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, next: NextFunction) => {
     try {
         const toDoRequest = req.body;
-
+        //@ts-ignore
+        const file: FileRequestType = req?.file
         if (!toDoRequest?.title) {
+            deleteFile(file)
             throw createError.BadRequest("Title is required")
         }
         if (!toDoRequest?.body) {
+            deleteFile(file)
             throw createError.BadRequest("Body is required")
         }
         if (!toDoRequest?.state) {
+            deleteFile(file)
             throw createError.BadRequest("State is required")
         }
         //@ts-ignore
         const userId = req.payLoad.aud
         const findUser = await User.findByPk(userId)
-
         if (!findUser) {
             throw createError.Conflict("No User Found")
         }
@@ -102,9 +109,25 @@ const createTdo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, n
             body: toDoRequest.body,
             state: toDoRequest?.state,
         })
+
         if (!createTodo) {
+            deleteFile(file)
             throw createError.BadRequest("Failed to create todo")
         }
+        const todo = await Todo.findByPk(createTodo?.dataValues?.toDoId);
+        if (file?.path) {
+            const createTodoImage = await todo.createFile({
+                fileName: file?.path,
+                type: file?.mimetype,
+                fileSize: file?.size,
+                userId: userId
+            })
+            if (!createTodoImage) {
+                deleteFile(file)
+                throw createError.BadRequest("Failed to create file")
+            }
+        }
+
         return res.send({ success: true })
     } catch (error) {
         next(error)
@@ -118,11 +141,15 @@ const deleteToDo = async (req, res, next) => {
             throw createError.Conflict("No ToDo Found")
         }
         const userId = req.payLoad.aud;
-        let imagePath = null;
-        if (req.file && req.file.path) {
-            imagePath = req.file.path;
-        }
-        const toDo = await Todo.findByPk(id);
+
+        const toDo = await Todo.findByPk(id, {
+            include: [{ model: File, as: 'files', }],
+        });
+        const rawTodo = toDo?.toJSON()
+        if (rawTodo?.files?.length)
+            rawTodo?.files.forEach(element => {
+                deleteFile(element)
+            });
         if (toDo) {
             await toDo.destroy();
             return res.send({ success: true });
