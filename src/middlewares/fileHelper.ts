@@ -1,5 +1,5 @@
 import fs = require('fs');
-import { FileRequestType } from '../types/todoType';
+import { FileRequestType, StorageFileType } from '../types/todoType';
 
 const deleteFile = (file: FileRequestType) => {
     if (fs.existsSync(file?.path)) {
@@ -8,6 +8,15 @@ const deleteFile = (file: FileRequestType) => {
     } else {
         console.log("No file found with path", file?.path);
     }
+    if (fs.existsSync(file?.fileName)) {
+        console.log("Delete file with filename", file?.fileName);
+        fs.unlinkSync(file?.fileName);
+    } else {
+        console.log("No file found with filename", file?.fileName);
+    }
+}
+
+export const deleteFileStorage = (file: StorageFileType) => {
     if (fs.existsSync(file?.fileName)) {
         console.log("Delete file with filename", file?.fileName);
         fs.unlinkSync(file?.fileName);

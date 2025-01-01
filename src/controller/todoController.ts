@@ -5,7 +5,7 @@ import { User, Todo, File } from '../../models';
 import { Request, Response, NextFunction } from 'express'
 import { FileRequestType, ToDoRequestType } from '../types/todoType';
 import paginateHelper from '../helper/paginateHelper';
-import { deleteFile } from '../middlewares/fileHelper';
+import { deleteFile, deleteFileStorage } from '../middlewares/fileHelper';
 
 const getUserTodo = async (req, res, next) => {
     try {
@@ -148,7 +148,7 @@ const deleteToDo = async (req, res, next) => {
         const rawTodo = toDo?.toJSON()
         if (rawTodo?.files?.length)
             rawTodo?.files.forEach(element => {
-                deleteFile(element)
+                deleteFileStorage(element)
             });
         if (toDo) {
             await toDo.destroy();

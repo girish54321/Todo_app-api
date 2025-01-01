@@ -17,3 +17,14 @@ export interface FileRequestType {
     path?: string;
     size?: number;
 }
+
+export interface StorageFileType {
+    fileId?: string;
+    fileName?: string;
+    fileSize?: string;
+    type?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    toDoId?: string;
+    userId?: string;
+} 
