@@ -66,6 +66,7 @@ const getAllTheTodo = async (req, res, next) => {
                 pageSize: size,
             }),
         });
+
         res.send({
             total_pages: Math.ceil(usersWithCount.count / Number.parseInt(`${size}`)),
             total: usersWithCount.count,
@@ -83,7 +84,7 @@ const getAllTheTodo = async (req, res, next) => {
 const createTdo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, next: NextFunction) => {
     try {
         const toDoRequest = req.body;
-        //@ts-ignore
+        //@ts-ignore 
         const file: FileRequestType = req?.file
         if (!toDoRequest?.title) {
             deleteFile(file)
@@ -165,13 +166,20 @@ const updateTodo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, 
     try {
         const toDoRequest = req.body;
         const { title, body, toDoId, state } = req.body;
+        // @ts-ignore
+        const file: FileRequestType = req?.file
+        //@ts-ignore
+        const userId = req.payLoad.aud
         if (!toDoRequest?.title) {
+            deleteFile(file)
             throw createError.BadRequest("Title is required")
         }
         if (!toDoRequest?.body) {
+            deleteFile(file)
             throw createError.BadRequest("Body is required")
         }
         if (!toDoRequest?.state) {
+            deleteFile(file)
             throw createError.BadRequest("Status is required")
         }
         const toDo = await Todo.findByPk(toDoId);
@@ -183,6 +191,27 @@ const updateTodo = async (req: Request<{}, {}, ToDoRequestType>, res: Response, 
         toDo.body = body;
         toDo.state = state;
         await toDo.save();
+
+        const findFile = await File.findOne({
+            where: { userId: userId, toDoId: null },
+        })
+
+        if (findFile && file) {
+            let delteFile = findFile.toJSON()
+            deleteFileStorage(delteFile)
+            findFile.fileName = file?.path
+            await findFile.save()
+        } else if (file) {
+            const createTodoImage = await toDo.createFile({
+                fileName: file?.path,
+                type: file?.mimetype,
+                fileSize: file?.size,
+            })
+            if (!createTodoImage) {
+                deleteFile(file)
+                throw createError.BadRequest("Failed to create file")
+            }
+        }
         return res.send({ success: true });
     } catch (error) {
         next(error);
